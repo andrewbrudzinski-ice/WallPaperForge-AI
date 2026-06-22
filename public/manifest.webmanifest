@@ -2,17 +2,32 @@
   "name": "WallpaperForge AI",
   "short_name": "WallpaperForge",
   "description": "Device-perfect AI phone wallpapers.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#08080F",
   "theme_color": "#08080F",
   "orientation": "portrait",
+  "categories": ["photo", "personalization", "graphics", "lifestyle"],
   "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "name": "Surprise Me",
+      "short_name": "Surprise",
+      "description": "Generate a wallpaper instantly",
+      "url": "/home?action=surprise",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Create from prompt",
+      "short_name": "Create",
+      "url": "/generate",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

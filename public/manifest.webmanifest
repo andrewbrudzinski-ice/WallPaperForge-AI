@@ -1,0 +1,18 @@
+{
+  "name": "WallpaperForge AI",
+  "short_name": "WallpaperForge",
+  "description": "Device-perfect AI phone wallpapers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08080F",
+  "theme_color": "#08080F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

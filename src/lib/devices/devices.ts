@@ -1,0 +1,332 @@
+import type { DeviceProfile, Manufacturer } from "@/types";
+import { buildSafeZones } from "./safe-zones";
+
+/**
+ * Smart device database.
+ *
+ * Each entry carries the native resolution plus a normalized safe-zone profile
+ * built from the device's physical cutout(s) and OS layout. The list is
+ * intentionally data-driven: add a new phone by appending one object — no other
+ * code needs to change. See README → "Extending the device database".
+ */
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+function aspect(width: number, height: number): { label: string; value: number } {
+  const d = gcd(width, height);
+  return { label: `${height / d}:${width / d}`, value: height / width };
+}
+
+interface Seed {
+  id: string;
+  manufacturer: Manufacturer;
+  model: string;
+  displayName?: string;
+  width: number;
+  height: number;
+  releaseYear: number;
+  platform: "ios" | "android";
+  cutout:
+    | { type: "dynamic-island"; centerY: number; width: number; height: number }
+    | { type: "notch"; centerY: number; width: number; height: number }
+    | { type: "punch-hole"; centerX?: number; centerY: number; width: number; height: number }
+    | { type: "none" };
+}
+
+function makeDevice(seed: Seed): DeviceProfile {
+  const { label, value } = aspect(seed.width, seed.height);
+  const cutouts =
+    seed.cutout.type === "none"
+      ? []
+      : [
+          {
+            type: seed.cutout.type,
+            centerX: "centerX" in seed.cutout ? seed.cutout.centerX : 0.5,
+            centerY: seed.cutout.centerY,
+            width: seed.cutout.width,
+            height: seed.cutout.height,
+          },
+        ];
+
+  return {
+    id: seed.id,
+    manufacturer: seed.manufacturer,
+    model: seed.model,
+    displayName: seed.displayName ?? seed.model,
+    width: seed.width,
+    height: seed.height,
+    aspectRatio: label,
+    aspectRatioValue: value,
+    releaseYear: seed.releaseYear,
+    safeZones: buildSafeZones({ platform: seed.platform, cutouts }),
+  };
+}
+
+const SEEDS: Seed[] = [
+  // ───────────── Apple iPhone ─────────────
+  {
+    id: "iphone-16-pro-max",
+    manufacturer: "Apple",
+    model: "iPhone 16 Pro Max",
+    width: 1320,
+    height: 2868,
+    releaseYear: 2024,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.045, width: 0.27, height: 0.018 },
+  },
+  {
+    id: "iphone-16-pro",
+    manufacturer: "Apple",
+    model: "iPhone 16 Pro",
+    width: 1206,
+    height: 2622,
+    releaseYear: 2024,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.046, width: 0.28, height: 0.019 },
+  },
+  {
+    id: "iphone-16",
+    manufacturer: "Apple",
+    model: "iPhone 16",
+    width: 1179,
+    height: 2556,
+    releaseYear: 2024,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.046, width: 0.28, height: 0.019 },
+  },
+  {
+    id: "iphone-15-pro-max",
+    manufacturer: "Apple",
+    model: "iPhone 15 Pro Max",
+    width: 1290,
+    height: 2796,
+    releaseYear: 2023,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.045, width: 0.27, height: 0.018 },
+  },
+  {
+    id: "iphone-15",
+    manufacturer: "Apple",
+    model: "iPhone 15",
+    width: 1179,
+    height: 2556,
+    releaseYear: 2023,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.046, width: 0.28, height: 0.019 },
+  },
+  {
+    id: "iphone-14-pro",
+    manufacturer: "Apple",
+    model: "iPhone 14 Pro",
+    width: 1179,
+    height: 2556,
+    releaseYear: 2022,
+    platform: "ios",
+    cutout: { type: "dynamic-island", centerY: 0.046, width: 0.28, height: 0.019 },
+  },
+  {
+    id: "iphone-13",
+    manufacturer: "Apple",
+    model: "iPhone 13",
+    width: 1170,
+    height: 2532,
+    releaseYear: 2021,
+    platform: "ios",
+    cutout: { type: "notch", centerY: 0.025, width: 0.4, height: 0.04 },
+  },
+  {
+    id: "iphone-se-3",
+    manufacturer: "Apple",
+    model: "iPhone SE (3rd gen)",
+    width: 750,
+    height: 1334,
+    releaseYear: 2022,
+    platform: "ios",
+    cutout: { type: "none" },
+  },
+
+  // ───────────── Samsung Galaxy ─────────────
+  {
+    id: "galaxy-s24-ultra",
+    manufacturer: "Samsung",
+    model: "Galaxy S24 Ultra",
+    width: 1440,
+    height: 3120,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.03, width: 0.035, height: 0.016 },
+  },
+  {
+    id: "galaxy-s24",
+    manufacturer: "Samsung",
+    model: "Galaxy S24",
+    width: 1080,
+    height: 2340,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.04, height: 0.018 },
+  },
+  {
+    id: "galaxy-s23",
+    manufacturer: "Samsung",
+    model: "Galaxy S23",
+    width: 1080,
+    height: 2340,
+    releaseYear: 2023,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.04, height: 0.018 },
+  },
+  {
+    id: "galaxy-z-fold-6",
+    manufacturer: "Samsung",
+    model: "Galaxy Z Fold 6 (cover)",
+    width: 968,
+    height: 2376,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.025, width: 0.04, height: 0.016 },
+  },
+  {
+    id: "galaxy-a55",
+    manufacturer: "Samsung",
+    model: "Galaxy A55",
+    width: 1080,
+    height: 2340,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.026, width: 0.038, height: 0.017 },
+  },
+
+  // ───────────── Google Pixel ─────────────
+  {
+    id: "pixel-9-pro",
+    manufacturer: "Google Pixel",
+    model: "Pixel 9 Pro",
+    width: 1280,
+    height: 2856,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.034, height: 0.015 },
+  },
+  {
+    id: "pixel-9",
+    manufacturer: "Google Pixel",
+    model: "Pixel 9",
+    width: 1080,
+    height: 2424,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.038, height: 0.017 },
+  },
+  {
+    id: "pixel-8-pro",
+    manufacturer: "Google Pixel",
+    model: "Pixel 8 Pro",
+    width: 1344,
+    height: 2992,
+    releaseYear: 2023,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.027, width: 0.032, height: 0.014 },
+  },
+  {
+    id: "pixel-7a",
+    manufacturer: "Google Pixel",
+    model: "Pixel 7a",
+    width: 1080,
+    height: 2400,
+    releaseYear: 2023,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.04, height: 0.018 },
+  },
+
+  // ───────────── OnePlus ─────────────
+  {
+    id: "oneplus-12",
+    manufacturer: "OnePlus",
+    model: "OnePlus 12",
+    width: 1440,
+    height: 3168,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.033, height: 0.015 },
+  },
+  {
+    id: "oneplus-nord-4",
+    manufacturer: "OnePlus",
+    model: "OnePlus Nord 4",
+    width: 1240,
+    height: 2772,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.027, width: 0.034, height: 0.015 },
+  },
+
+  // ───────────── Motorola ─────────────
+  {
+    id: "motorola-edge-50-pro",
+    manufacturer: "Motorola",
+    model: "Motorola Edge 50 Pro",
+    width: 1220,
+    height: 2712,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.027, width: 0.034, height: 0.015 },
+  },
+  {
+    id: "motorola-razr-50-ultra",
+    manufacturer: "Motorola",
+    model: "Razr 50 Ultra",
+    width: 1080,
+    height: 2640,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.026, width: 0.036, height: 0.016 },
+  },
+
+  // ───────────── Generic fallback ─────────────
+  {
+    id: "other-19_5-9",
+    manufacturer: "Other",
+    model: "Generic 19.5:9 Phone",
+    displayName: "Other / Generic (19.5:9)",
+    width: 1080,
+    height: 2400,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "punch-hole", centerY: 0.028, width: 0.04, height: 0.018 },
+  },
+  {
+    id: "other-20-9",
+    manufacturer: "Other",
+    model: "Generic 20:9 Phone",
+    displayName: "Other / Generic (20:9)",
+    width: 1080,
+    height: 2412,
+    releaseYear: 2024,
+    platform: "android",
+    cutout: { type: "none" },
+  },
+];
+
+export const DEVICES: DeviceProfile[] = SEEDS.map(makeDevice);
+
+export const MANUFACTURERS: Manufacturer[] = [
+  "Apple",
+  "Samsung",
+  "Google Pixel",
+  "OnePlus",
+  "Motorola",
+  "Other",
+];
+
+export function getDevicesByManufacturer(m: Manufacturer): DeviceProfile[] {
+  return DEVICES.filter((d) => d.manufacturer === m).sort(
+    (a, b) => b.releaseYear - a.releaseYear || a.model.localeCompare(b.model),
+  );
+}
+
+export function getDeviceById(id: string): DeviceProfile | undefined {
+  return DEVICES.find((d) => d.id === id);
+}

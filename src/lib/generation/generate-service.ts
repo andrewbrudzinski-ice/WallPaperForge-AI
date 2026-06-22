@@ -42,6 +42,8 @@ async function renderOne(
     width,
     height,
     highRes: req.highRes,
+    category: enhanced.category,
+    variationIndex,
   });
 
   return {

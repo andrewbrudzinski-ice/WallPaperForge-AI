@@ -15,6 +15,14 @@ export interface ImageGenerationParams {
   height: number;
   /** Premium tier requests the highest quality the provider supports. */
   highRes?: boolean;
+  /**
+   * Optional creative hints. Real providers ignore these (the prompt already
+   * carries the intent); the mock provider uses them to render motif art that
+   * matches the in-app style cards.
+   */
+  category?: import("@/types").WallpaperCategory | null;
+  /** Variation index within a set, used to diversify mock art palettes. */
+  variationIndex?: number;
 }
 
 export interface ImageGenerationResult {

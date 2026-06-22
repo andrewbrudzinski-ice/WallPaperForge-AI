@@ -7,7 +7,26 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 /** Trigger a browser download for an image URL (https or data URL). */
-export async function downloadImage(url: string, filename: string): Promise<void> {
+/** Infer the correct file extension from a data URL's mime type or a path. */
+export function imageExtension(url: string): string {
+  if (url.startsWith("data:")) {
+    const mime = /^data:([^;,]+)/.exec(url)?.[1] ?? "image/png";
+    if (mime.includes("svg")) return "svg";
+    if (mime.includes("jpeg") || mime.includes("jpg")) return "jpg";
+    if (mime.includes("webp")) return "webp";
+    if (mime.includes("gif")) return "gif";
+    return "png";
+  }
+  const ext = /\.(png|jpe?g|webp|svg|gif)(?:\?|#|$)/i.exec(url)?.[1];
+  return ext ? ext.toLowerCase().replace("jpeg", "jpg") : "png";
+}
+
+/**
+ * Download an image. `baseName` should NOT include an extension — the correct
+ * one is derived from the actual content type so files always open correctly
+ * (e.g. the mock provider's SVGs save as `.svg`, real PNGs as `.png`).
+ */
+export async function downloadImage(url: string, baseName: string): Promise<void> {
   // data: URLs can be downloaded directly; remote URLs are fetched into a blob
   // to bypass cross-origin download restrictions.
   let href = url;
@@ -20,7 +39,7 @@ export async function downloadImage(url: string, filename: string): Promise<void
   }
   const a = document.createElement("a");
   a.href = href;
-  a.download = filename;
+  a.download = `${baseName}.${imageExtension(url)}`;
   document.body.appendChild(a);
   a.click();
   a.remove();

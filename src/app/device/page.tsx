@@ -6,7 +6,9 @@ import { useAppStore } from "@/store/app-store";
 import { getEntitlements } from "@/lib/entitlements";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
+import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
+import { AccountPanel } from "@/components/account/AccountPanel";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
@@ -43,10 +45,11 @@ export default function DevicePage() {
 
   return (
     <>
-      <AppHeader />
+      <AmbientBackground />
+      <AppHeader showBrand={false} />
       <main className="flex flex-1 flex-col gap-5 px-4 pb-6 pt-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Smartphone className="h-6 w-6 text-accent" /> Your Device
+          <Smartphone className="h-6 w-6 text-accent" /> Profile
         </h1>
 
         <div className="grid gap-5 sm:grid-cols-[180px_1fr]">
@@ -87,6 +90,14 @@ export default function DevicePage() {
             </Button>
           </GlassCard>
         </div>
+
+        {/* Account & cloud sync */}
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white/70">
+            Account
+          </h2>
+          <AccountPanel />
+        </section>
 
         {/* Plan / premium architecture demo */}
         <section>

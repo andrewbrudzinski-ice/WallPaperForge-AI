@@ -12,6 +12,13 @@ AI · built-in mock).
 
 ## ✨ Features
 
+- **Premium, app-store-grade mobile UI** — animated hero with parallax,
+  glassmorphism, ambient gradient backdrops, large tap-to-generate style cards,
+  a swipeable result carousel, a magical generation overlay (AI particles +
+  cycling status messages), page transitions, and a floating 5-tab bottom nav.
+- **2–3 tap generation** — tap a style card → result, or one-tap Surprise Me.
+- **In-app model selector** — switch between OpenAI, Gemini, Stability AI, and
+  the mock provider from a pill dropdown; the choice is remembered locally.
 - **Device-aware optimization engine** — translates each phone's safe zones into
   natural-language composition instructions injected into every prompt (users
   never see them).
@@ -84,10 +91,28 @@ the mock provider** so it never hard-fails. See
    SUPABASE_SERVICE_ROLE_KEY=...
    ```
 
-When configured, `/api/generate` enforces the daily quota server-side and
-persists wallpapers + history per authenticated user. Without it, the Zustand
-store (`src/store/app-store.ts`) is the source of truth and persists to
-`localStorage`.
+4. (Optional) In **Authentication → Providers**, keep **Email** enabled. For the
+   smoothest local testing, disable "Confirm email" so sign-up returns a session
+   immediately.
+
+### Accounts & cloud sync
+
+When Supabase is configured, the **Profile** screen shows an email/password
+account panel:
+
+- **Sign up / sign in** with email + password (`useAuth`).
+- On sign-in, your library is **pulled** from Supabase and merged into the
+  store, and any items created offline are **pushed** up — nothing is lost
+  (`useSync` + `lib/sync/`).
+- Favorites and collections **write through** to Supabase as you change them;
+  generated wallpapers + history are persisted by `/api/generate`. All writes
+  are scoped by **Row Level Security** to the signed-in user.
+- A `middleware.ts` keeps the auth session fresh for server routes.
+
+Everything is **additive and fully optional**: with no Supabase keys, auth,
+sync, and middleware are inert, and the Zustand store
+(`src/store/app-store.ts`) remains the source of truth, persisting to
+`localStorage`. The app is identical to its offline self until you sign in.
 
 ---
 
@@ -116,17 +141,24 @@ store (`src/store/app-store.ts`) is the source of truth and persists to
 src/
 ├── app/
 │   ├── layout.tsx              # Root layout, fonts, PWA metadata
-│   ├── page.tsx                # Entry router (onboarding vs. generate)
+│   ├── template.tsx            # Page-transition wrapper (Framer Motion)
+│   ├── page.tsx                # Entry router (onboarding vs. home)
 │   ├── onboarding/             # Welcome → manufacturer → model → save
-│   ├── generate/               # Main screen: hero + 3 modes + preview
+│   ├── home/                   # Centerpiece: hero, quick actions, style cards
+│   ├── generate/               # Create screen: 3 modes + result sheet
 │   ├── favorites/              # Favorites + collections
 │   ├── history/                # Generation history + re-download
-│   ├── device/                 # Device details, change, plan/premium
+│   ├── device/                 # Profile: device, change, plan/premium
 │   └── api/
 │       ├── generate/route.ts   # Single generation + quota + persistence
 │       └── variations/route.ts # 4 diverse variations
-├── components/                 # UI primitives, nav, generate, preview
-├── hooks/useGenerate.ts        # Client generation orchestration
+├── components/
+│   ├── home/                   # HeroCarousel, QuickActions, StyleGrid, RecentStrip
+│   ├── generate/               # GeneratorPanel, GenerationOverlay
+│   ├── preview/                # DevicePreview, ResultSheet (swipeable carousel)
+│   ├── nav/                    # AppHeader, BottomNav
+│   └── ui/                     # Button, GlassCard, ProviderSelector, AmbientBackground
+├── hooks/                      # useGenerate, useGenerationFlow
 ├── lib/
 │   ├── devices/                # Smart device database + safe-zone builders
 │   ├── generation/             # Catalog, optimization engine, service

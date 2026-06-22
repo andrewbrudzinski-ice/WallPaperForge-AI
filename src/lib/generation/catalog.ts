@@ -187,3 +187,13 @@ export const COMPLEXITY_DESCRIPTORS: Record<Complexity, string> = {
 export function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+/** Fully-randomized Surprise Me settings for the one-tap home action. */
+export function randomSurprise(): import("@/types").SurpriseOptions {
+  return {
+    mood: pick(MOODS),
+    palette: pick(PALETTES),
+    style: pick(STYLES),
+    complexity: pick(COMPLEXITIES),
+  };
+}

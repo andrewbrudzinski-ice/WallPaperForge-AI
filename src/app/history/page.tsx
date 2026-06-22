@@ -4,6 +4,7 @@ import { Clock, Download, Heart, Eye } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
+import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { downloadImage, formatDate, slugify } from "@/lib/utils";
@@ -18,7 +19,8 @@ export default function HistoryPage() {
 
   return (
     <>
-      <AppHeader />
+      <AmbientBackground />
+      <AppHeader showBrand={false} />
       <main className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-2">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold">

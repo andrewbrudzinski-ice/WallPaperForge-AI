@@ -5,6 +5,7 @@ import { Heart, FolderPlus, Trash2, Download, FolderOpen } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
+import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
@@ -25,7 +26,8 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <AppHeader />
+      <AmbientBackground />
+      <AppHeader showBrand={false} />
       <main className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-2">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-bold">

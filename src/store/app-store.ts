@@ -7,6 +7,7 @@ import type {
   DeviceProfile,
   GeneratedWallpaper,
   HistoryEntry,
+  ProviderId,
   Tier,
 } from "@/types";
 
@@ -30,6 +31,10 @@ interface AppState {
   // Entitlements
   tier: Tier;
   setTier: (tier: Tier) => void;
+
+  // Selected AI image provider (remembered across sessions).
+  provider: ProviderId;
+  setProvider: (provider: ProviderId) => void;
 
   // Daily usage (UTC day key + count) — mirrors generation_history quota.
   usage: { dayKey: string; count: number };
@@ -70,6 +75,9 @@ export const useAppStore = create<AppState>()(
 
       tier: "free",
       setTier: (tier) => set({ tier }),
+
+      provider: "openai",
+      setProvider: (provider) => set({ provider }),
 
       usage: { dayKey: utcDayKey(), count: 0 },
       incrementUsage: () => {
@@ -150,6 +158,7 @@ export const useAppStore = create<AppState>()(
         device: s.device,
         onboarded: s.onboarded,
         tier: s.tier,
+        provider: s.provider,
         usage: s.usage,
         history: s.history,
         favorites: s.favorites,

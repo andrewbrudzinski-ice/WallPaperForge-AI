@@ -25,6 +25,7 @@ interface GenerateOpts {
 export function useGenerate() {
   const device = useAppStore((s) => s.device);
   const tier = useAppStore((s) => s.tier);
+  const provider = useAppStore((s) => s.provider);
   const usageToday = useAppStore((s) => s.usageToday);
   const incrementUsage = useAppStore((s) => s.incrementUsage);
   const setCurrent = useAppStore((s) => s.setCurrent);
@@ -58,6 +59,7 @@ export function useGenerate() {
           category: opts.category,
           surprise: opts.surprise,
           highRes: entitlements.maxResolution === "4k",
+          provider,
           tier,
           usedToday: usageToday(),
         };
@@ -90,6 +92,7 @@ export function useGenerate() {
     [
       device,
       tier,
+      provider,
       usageToday,
       entitlements.maxResolution,
       incrementUsage,
@@ -112,6 +115,7 @@ export function useGenerate() {
           category: base.category ?? undefined,
           highRes: entitlements.maxResolution === "4k",
           variationOf: base.id,
+          provider,
           tier,
           count: 4,
         };
@@ -136,7 +140,7 @@ export function useGenerate() {
         setVariationsLoading(false);
       }
     },
-    [device, tier, entitlements.maxResolution, setVariations, addToHistory],
+    [device, tier, provider, entitlements.maxResolution, setVariations, addToHistory],
   );
 
   return { generate, makeVariations, loading, variationsLoading, error, setError };

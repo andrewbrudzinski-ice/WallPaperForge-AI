@@ -34,7 +34,7 @@ async function renderOne(
   variationIndex?: number,
 ): Promise<GeneratedWallpaper> {
   const enhanced = enhancePrompt(req, variationIndex);
-  const provider = getProvider();
+  const provider = getProvider(req.provider);
   const { width, height } = targetDimensions(req);
 
   const result = await provider.generate({

@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import type { GeneratedWallpaper } from "@/types";
+import type { GeneratedWallpaper, WallpaperCategory } from "@/types";
 import { CATEGORY_STYLES, FEATURED_CATEGORIES } from "@/lib/generation/category-style";
+import { CategoryArt } from "./CategoryArt";
 
 interface Slide {
   key: string;
   imageUrl?: string;
+  category?: WallpaperCategory;
   gradient: string;
   title: string;
   subtitle: string;
@@ -30,6 +32,7 @@ export function HeroCarousel({ recent }: { recent: GeneratedWallpaper[] }) {
     }));
     const fromCurated: Slide[] = FEATURED_CATEGORIES.slice(0, 4).map((c) => ({
       key: `curated-${c}`,
+      category: c,
       gradient: CATEGORY_STYLES[c].gradient,
       title: `Featured · ${c}`,
       subtitle: CATEGORY_STYLES[c].tagline,
@@ -68,6 +71,8 @@ export function HeroCarousel({ recent }: { recent: GeneratedWallpaper[] }) {
               alt={slide.subtitle}
               className="h-full w-full object-cover"
             />
+          ) : slide.category ? (
+            <CategoryArt category={slide.category} className="h-full w-full" />
           ) : (
             <div className="h-full w-full" style={{ background: slide.gradient }} />
           )}

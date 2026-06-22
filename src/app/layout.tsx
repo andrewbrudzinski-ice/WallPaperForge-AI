@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -32,9 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable}`}>
       <body>
-        <div className="mx-auto flex min-h-screen w-full max-w-md flex-col md:max-w-2xl lg:max-w-5xl">
-          {children}
-        </div>
+        <AppProviders>
+          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col md:max-w-2xl lg:max-w-5xl">
+            {children}
+          </div>
+        </AppProviders>
       </body>
     </html>
   );

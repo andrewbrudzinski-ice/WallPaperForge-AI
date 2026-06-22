@@ -91,10 +91,28 @@ the mock provider** so it never hard-fails. See
    SUPABASE_SERVICE_ROLE_KEY=...
    ```
 
-When configured, `/api/generate` enforces the daily quota server-side and
-persists wallpapers + history per authenticated user. Without it, the Zustand
-store (`src/store/app-store.ts`) is the source of truth and persists to
-`localStorage`.
+4. (Optional) In **Authentication → Providers**, keep **Email** enabled. For the
+   smoothest local testing, disable "Confirm email" so sign-up returns a session
+   immediately.
+
+### Accounts & cloud sync
+
+When Supabase is configured, the **Profile** screen shows an email/password
+account panel:
+
+- **Sign up / sign in** with email + password (`useAuth`).
+- On sign-in, your library is **pulled** from Supabase and merged into the
+  store, and any items created offline are **pushed** up — nothing is lost
+  (`useSync` + `lib/sync/`).
+- Favorites and collections **write through** to Supabase as you change them;
+  generated wallpapers + history are persisted by `/api/generate`. All writes
+  are scoped by **Row Level Security** to the signed-in user.
+- A `middleware.ts` keeps the auth session fresh for server routes.
+
+Everything is **additive and fully optional**: with no Supabase keys, auth,
+sync, and middleware are inert, and the Zustand store
+(`src/store/app-store.ts`) remains the source of truth, persisting to
+`localStorage`. The app is identical to its offline self until you sign in.
 
 ---
 

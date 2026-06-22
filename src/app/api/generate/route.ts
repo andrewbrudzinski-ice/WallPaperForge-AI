@@ -70,10 +70,13 @@ export async function POST(req: Request) {
   }
 
   // ── Persist (best-effort) ──────────────────────────────────
+  // Use the client-generated wallpaper id as the row id so favorites,
+  // collections, and history (written by the client sync layer) all reference
+  // the same identifier.
   if (userId && service) {
-    const { data: inserted } = await service
-      .from("generated_wallpapers")
-      .insert({
+    await service.from("generated_wallpapers").upsert(
+      {
+        id: wallpaper.id,
         user_id: userId,
         device_key: wallpaper.deviceId,
         image_url: wallpaper.imageUrl,
@@ -85,13 +88,13 @@ export async function POST(req: Request) {
         width: wallpaper.width,
         height: wallpaper.height,
         is_high_res: Boolean(highRes),
-      })
-      .select("id")
-      .single();
+      },
+      { onConflict: "id" },
+    );
 
     await service.from("generation_history").insert({
       user_id: userId,
-      wallpaper_id: inserted?.id ?? null,
+      wallpaper_id: wallpaper.id,
       mode: wallpaper.mode,
       prompt: body.prompt ?? null,
     });

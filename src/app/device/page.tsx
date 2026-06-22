@@ -8,6 +8,7 @@ import { AppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
+import { AccountPanel } from "@/components/account/AccountPanel";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
@@ -89,6 +90,14 @@ export default function DevicePage() {
             </Button>
           </GlassCard>
         </div>
+
+        {/* Account & cloud sync */}
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white/70">
+            Account
+          </h2>
+          <AccountPanel />
+        </section>
 
         {/* Plan / premium architecture demo */}
         <section>

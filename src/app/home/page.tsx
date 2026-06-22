@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Crown, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, Crown, Zap } from "lucide-react";
 import type { GeneratedWallpaper, WallpaperCategory } from "@/types";
 import { useAppStore } from "@/store/app-store";
 import { useGenerationFlow } from "@/hooks/useGenerationFlow";
@@ -10,6 +11,7 @@ import { getEntitlements } from "@/lib/entitlements";
 import { randomSurprise } from "@/lib/generation/catalog";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { ProviderSelector } from "@/components/ui/ProviderSelector";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { QuickActions } from "@/components/home/QuickActions";
@@ -117,6 +119,24 @@ export default function HomePage() {
             <SectionHeader title="Recently generated" />
             <RecentStrip device={device} recent={recent} onOpen={openRecent} />
           </section>
+
+          <Link href="/gallery" className="block">
+            <GlassCard
+              interactive
+              className="flex items-center gap-3 p-4"
+            >
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500/30 to-sky-500/30 text-xl">
+                🧭
+              </span>
+              <div className="flex-1">
+                <div className="font-semibold">Explore the community gallery</div>
+                <div className="text-xs text-white/50">
+                  Discover wallpapers shared by others
+                </div>
+              </div>
+              <ArrowRight className="h-5 w-5 text-white/40" />
+            </GlassCard>
+          </Link>
         </div>
       </main>
 

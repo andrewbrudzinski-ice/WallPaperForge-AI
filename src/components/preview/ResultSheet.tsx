@@ -17,6 +17,7 @@ import { DevicePreview, type PreviewMode } from "./DevicePreview";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAppStore } from "@/store/app-store";
+import { PublishButton } from "@/components/gallery/PublishButton";
 import { downloadImage, slugify, cn } from "@/lib/utils";
 
 interface ResultSheetProps {
@@ -255,6 +256,8 @@ export function ResultSheet({
                 Generate 4 Variations
               </Button>
             </div>
+
+            {activeSlide && <PublishButton wallpaper={activeSlide} />}
           </motion.div>
 
           {/* Fullscreen preview */}

@@ -85,6 +85,20 @@ create table if not exists public.generated_wallpapers (
 create index if not exists wallpapers_user_idx
   on public.generated_wallpapers (user_id, created_at desc);
 
+-- ── Public gallery / sharing ─────────────────────────────────
+-- A wallpaper can be published to a public, shareable gallery. `share_slug`
+-- backs the public URL (/w/<slug>). These columns are added idempotently so
+-- the migration is safe to re-run on an existing database.
+alter table public.generated_wallpapers
+  add column if not exists is_public boolean not null default false;
+alter table public.generated_wallpapers
+  add column if not exists share_slug text unique;
+alter table public.generated_wallpapers
+  add column if not exists published_at timestamptz;
+
+create index if not exists wallpapers_public_idx
+  on public.generated_wallpapers (published_at desc) where (is_public);
+
 -- ─────────────────────────────────────────────────────────────
 -- FAVORITES
 -- A user's favorited wallpapers (join table; unique per pair).
@@ -198,6 +212,11 @@ create policy "devices owner" on public.devices
 drop policy if exists "wallpapers owner" on public.generated_wallpapers;
 create policy "wallpapers owner" on public.generated_wallpapers
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Anyone (including anon) may read wallpapers published to the public gallery.
+drop policy if exists "wallpapers public read" on public.generated_wallpapers;
+create policy "wallpapers public read" on public.generated_wallpapers
+  for select using (is_public = true);
 
 -- favorites
 drop policy if exists "favorites owner" on public.favorites;

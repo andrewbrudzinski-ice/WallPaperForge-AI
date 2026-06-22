@@ -161,6 +161,18 @@ export interface GeneratedWallpaper {
   isFavorite?: boolean;
 }
 
+/** A wallpaper published to the public gallery (anon-readable shape). */
+export interface PublicWallpaper {
+  id: string;
+  slug: string;
+  imageUrl: string;
+  description: string;
+  category: WallpaperCategory | null;
+  width: number;
+  height: number;
+  createdAt: string;
+}
+
 export interface GenerateResponse {
   wallpapers: GeneratedWallpaper[];
   /** Remaining generations today for free-tier users (null = unlimited). */

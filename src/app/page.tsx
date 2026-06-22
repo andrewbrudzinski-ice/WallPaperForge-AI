@@ -19,7 +19,7 @@ export default function Home() {
   useEffect(() => {
     // Wait a tick for the persisted store to hydrate.
     const id = setTimeout(() => {
-      router.replace(onboarded && device ? "/generate" : "/onboarding");
+      router.replace(onboarded && device ? "/home" : "/onboarding");
     }, 50);
     return () => clearTimeout(id);
   }, [onboarded, device, router]);

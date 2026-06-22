@@ -12,6 +12,13 @@ AI · built-in mock).
 
 ## ✨ Features
 
+- **Premium, app-store-grade mobile UI** — animated hero with parallax,
+  glassmorphism, ambient gradient backdrops, large tap-to-generate style cards,
+  a swipeable result carousel, a magical generation overlay (AI particles +
+  cycling status messages), page transitions, and a floating 5-tab bottom nav.
+- **2–3 tap generation** — tap a style card → result, or one-tap Surprise Me.
+- **In-app model selector** — switch between OpenAI, Gemini, Stability AI, and
+  the mock provider from a pill dropdown; the choice is remembered locally.
 - **Device-aware optimization engine** — translates each phone's safe zones into
   natural-language composition instructions injected into every prompt (users
   never see them).
@@ -116,17 +123,24 @@ store (`src/store/app-store.ts`) is the source of truth and persists to
 src/
 ├── app/
 │   ├── layout.tsx              # Root layout, fonts, PWA metadata
-│   ├── page.tsx                # Entry router (onboarding vs. generate)
+│   ├── template.tsx            # Page-transition wrapper (Framer Motion)
+│   ├── page.tsx                # Entry router (onboarding vs. home)
 │   ├── onboarding/             # Welcome → manufacturer → model → save
-│   ├── generate/               # Main screen: hero + 3 modes + preview
+│   ├── home/                   # Centerpiece: hero, quick actions, style cards
+│   ├── generate/               # Create screen: 3 modes + result sheet
 │   ├── favorites/              # Favorites + collections
 │   ├── history/                # Generation history + re-download
-│   ├── device/                 # Device details, change, plan/premium
+│   ├── device/                 # Profile: device, change, plan/premium
 │   └── api/
 │       ├── generate/route.ts   # Single generation + quota + persistence
 │       └── variations/route.ts # 4 diverse variations
-├── components/                 # UI primitives, nav, generate, preview
-├── hooks/useGenerate.ts        # Client generation orchestration
+├── components/
+│   ├── home/                   # HeroCarousel, QuickActions, StyleGrid, RecentStrip
+│   ├── generate/               # GeneratorPanel, GenerationOverlay
+│   ├── preview/                # DevicePreview, ResultSheet (swipeable carousel)
+│   ├── nav/                    # AppHeader, BottomNav
+│   └── ui/                     # Button, GlassCard, ProviderSelector, AmbientBackground
+├── hooks/                      # useGenerate, useGenerationFlow
 ├── lib/
 │   ├── devices/                # Smart device database + safe-zone builders
 │   ├── generation/             # Catalog, optimization engine, service

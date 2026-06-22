@@ -136,7 +136,12 @@ export interface GenerateRequest {
   highRes?: boolean;
   /** When set, produce N stylistic variations of a base concept. */
   variationOf?: string;
+  /** User-selected image provider; falls back to the env default if omitted. */
+  provider?: ProviderId;
 }
+
+/** Available image-generation backends (mirrors the provider registry). */
+export type ProviderId = "openai" | "gemini" | "stability" | "mock";
 
 export interface GeneratedWallpaper {
   id: string;

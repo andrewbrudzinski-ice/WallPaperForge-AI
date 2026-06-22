@@ -39,7 +39,7 @@ export default function Onboarding() {
   function save() {
     if (!selected) return;
     setDevice(selected);
-    router.replace("/generate");
+    router.replace("/home");
   }
 
   return (

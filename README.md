@@ -16,6 +16,8 @@ AI · built-in mock).
   glassmorphism, ambient gradient backdrops, large tap-to-generate style cards,
   a swipeable result carousel, a magical generation overlay (AI particles +
   cycling status messages), page transitions, and a floating 5-tab bottom nav.
+- **Installable PWA** — add-to-home-screen install prompt, app icons, standalone
+  display, app shortcuts, and an offline fallback via a service worker.
 - **2–3 tap generation** — tap a style card → result, or one-tap Surprise Me.
 - **In-app model selector** — switch between OpenAI, Gemini, Stability AI, and
   the mock provider from a pill dropdown; the choice is remembered locally.

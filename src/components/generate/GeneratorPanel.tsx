@@ -27,6 +27,8 @@ interface GeneratorPanelProps {
   onRandom: (category?: WallpaperCategory) => void;
   onPrompt: (prompt: string) => void;
   onSurprise: (opts: SurpriseOptions) => void;
+  /** Pre-fill the prompt box and open the Prompt tab (e.g. gallery remix). */
+  initialPrompt?: string;
 }
 
 const PROMPT_EXAMPLES = [
@@ -74,8 +76,9 @@ export function GeneratorPanel({
   onRandom,
   onPrompt,
   onSurprise,
+  initialPrompt = "",
 }: GeneratorPanelProps) {
-  const [tab, setTab] = useState<Mode>("random");
+  const [tab, setTab] = useState<Mode>(initialPrompt ? "prompt" : "random");
 
   // random
   const [randomCategory, setRandomCategory] = useState<WallpaperCategory | null>(
@@ -83,7 +86,7 @@ export function GeneratorPanel({
   );
 
   // prompt
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(initialPrompt);
 
   // surprise
   const [mood, setMood] = useState<Mood>("Epic");

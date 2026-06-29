@@ -83,10 +83,10 @@ export default async function PublicWallpaperPage({ params }: Params) {
           <ShareActions imageUrl={w.imageUrl} description={w.description} />
 
           <Link
-            href="/home"
+            href={`/generate?remix=${encodeURIComponent(w.description)}`}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-accent to-accent-soft px-5 py-3.5 font-semibold text-white shadow-lg shadow-accent/25 active:scale-[0.98]"
           >
-            Create your own <ArrowRight className="h-5 w-5" />
+            Remix this <ArrowRight className="h-5 w-5" />
           </Link>
           <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-white/35">
             <Download className="h-3.5 w-3.5" /> Free · works on any phone

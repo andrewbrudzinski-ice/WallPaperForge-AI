@@ -58,6 +58,7 @@ interface AppState {
 
   createCollection: (name: string) => Collection;
   addToCollection: (collectionId: string, w: GeneratedWallpaper) => void;
+  removeFromCollection: (collectionId: string, wallpaperId: string) => void;
   removeCollection: (collectionId: string) => void;
 
   /** Merge a Supabase snapshot into local state (used on sign-in). */
@@ -153,6 +154,15 @@ export const useAppStore = create<AppState>()(
                     ? c.wallpaperIds
                     : [w.id, ...c.wallpaperIds],
                 }
+              : c,
+          ),
+        })),
+
+      removeFromCollection: (collectionId, wallpaperId) =>
+        set((s) => ({
+          collections: s.collections.map((c) =>
+            c.id === collectionId
+              ? { ...c, wallpaperIds: c.wallpaperIds.filter((id) => id !== wallpaperId) }
               : c,
           ),
         })),

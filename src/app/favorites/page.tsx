@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Heart, FolderPlus, Trash2, Download, FolderOpen } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { AppHeader } from "@/components/nav/AppHeader";
@@ -70,7 +71,10 @@ export default function FavoritesPage() {
                   key={c.id}
                   className="flex items-center justify-between gap-3 p-3"
                 >
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href={`/collections/${c.id}`}
+                    className="flex flex-1 items-center gap-3"
+                  >
                     {c.coverUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -88,7 +92,7 @@ export default function FavoritesPage() {
                         {c.wallpaperIds.length === 1 ? "" : "s"}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                   <button
                     onClick={() => removeCollection(c.id)}
                     className="rounded-xl p-2 text-white/40 hover:bg-white/10 hover:text-rose-300"

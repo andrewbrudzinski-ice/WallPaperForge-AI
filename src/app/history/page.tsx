@@ -1,7 +1,10 @@
 "use client";
 
-import { Clock, Download, Heart, Eye } from "lucide-react";
+import { useState } from "react";
+import { Clock, Download, Heart, Eye, Search } from "lucide-react";
+import type { WallpaperCategory } from "@/types";
 import { useAppStore } from "@/store/app-store";
+import { filterHistory, historyCategories } from "@/lib/history-filter";
 import { AppHeader } from "@/components/nav/AppHeader";
 import { BottomNav } from "@/components/nav/BottomNav";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
@@ -16,6 +19,11 @@ export default function HistoryPage() {
   const toggleFavorite = useAppStore((s) => s.toggleFavorite);
   const isFavorite = useAppStore((s) => s.isFavorite);
   const setCurrent = useAppStore((s) => s.setCurrent);
+
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<WallpaperCategory | null>(null);
+  const categories = historyCategories(history);
+  const filtered = filterHistory(history, { query, category });
 
   return (
     <>
@@ -37,8 +45,42 @@ export default function HistoryPage() {
             <p>Nothing generated yet. Create your first wallpaper!</p>
           </GlassCard>
         ) : (
+          <>
+            {/* Search + category filter */}
+            <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/30 px-3">
+              <Search className="h-4 w-4 text-white/40" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search your history…"
+                className="w-full bg-transparent py-2.5 text-sm outline-none placeholder:text-white/30"
+              />
+            </div>
+            {categories.length > 0 && (
+              <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+                <FilterChip active={category === null} onClick={() => setCategory(null)}>
+                  All
+                </FilterChip>
+                {categories.map((c) => (
+                  <FilterChip
+                    key={c}
+                    active={category === c}
+                    onClick={() => setCategory(category === c ? null : c)}
+                  >
+                    {c}
+                  </FilterChip>
+                ))}
+              </div>
+            )}
+
+            {filtered.length === 0 ? (
+              <GlassCard className="flex flex-col items-center gap-2 p-10 text-center text-white/50">
+                <Search className="h-8 w-8" />
+                <p>No generations match your search.</p>
+              </GlassCard>
+            ) : (
           <div className="flex flex-col gap-3">
-            {history.map((entry) => {
+            {filtered.map((entry) => {
               const w = entry.wallpaper;
               const fav = isFavorite(w.id);
               return (
@@ -94,9 +136,35 @@ export default function HistoryPage() {
               );
             })}
           </div>
+            )}
+          </>
         )}
       </main>
       <BottomNav />
     </>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "shrink-0 rounded-full border px-3.5 py-1.5 text-sm transition-all",
+        active
+          ? "border-accent/60 bg-accent/20 text-white"
+          : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10",
+      )}
+    >
+      {children}
+    </button>
   );
 }

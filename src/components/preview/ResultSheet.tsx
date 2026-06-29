@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAppStore } from "@/store/app-store";
 import { PublishButton } from "@/components/gallery/PublishButton";
+import { AddToCollectionButton } from "@/components/collections/AddToCollectionButton";
 import { downloadImage, slugify, cn } from "@/lib/utils";
 
 interface ResultSheetProps {
@@ -264,6 +265,7 @@ export function ResultSheet({
               </Button>
             </div>
 
+            {activeSlide && <AddToCollectionButton wallpaper={activeSlide} />}
             {activeSlide && <PublishButton wallpaper={activeSlide} />}
           </motion.div>
 

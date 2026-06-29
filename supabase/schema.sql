@@ -39,6 +39,15 @@ create table if not exists public.users (
 alter table public.users add column if not exists stripe_customer_id text unique;
 alter table public.users add column if not exists stripe_subscription_id text;
 
+-- Processed Stripe webhook events, for idempotency (Stripe may deliver an event
+-- more than once). Written only by the service role; RLS denies client access.
+create table if not exists public.billing_events (
+  id           text primary key,        -- Stripe event id (evt_...)
+  type         text not null,
+  processed_at timestamptz not null default now()
+);
+alter table public.billing_events enable row level security;
+
 -- ─────────────────────────────────────────────────────────────
 -- DEVICES
 -- A user's saved phone profile(s). One is marked active.

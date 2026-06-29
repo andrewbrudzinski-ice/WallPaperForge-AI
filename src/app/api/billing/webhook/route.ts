@@ -1,21 +1,43 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getServiceSupabase } from "@/lib/supabase/server";
-import { getStripe, subscriptionStatusToTier } from "@/lib/billing/stripe";
+import {
+  getStripe,
+  isoFromUnix,
+  mapSubscriptionToUpdate,
+} from "@/lib/billing/stripe";
 
 export const runtime = "nodejs";
 // Stripe needs the raw, unparsed body to verify the signature.
 export const dynamic = "force-dynamic";
 
-function isoFromUnix(seconds?: number | null): string | null {
-  return seconds ? new Date(seconds * 1000).toISOString() : null;
+type ServiceClient = NonNullable<ReturnType<typeof getServiceSupabase>>;
+
+/**
+ * Record the event id for idempotency. Returns false when the event was already
+ * processed (so we should skip), true when it's new (or when we can't tell and
+ * should proceed best-effort).
+ */
+async function markEvent(
+  service: ServiceClient,
+  event: Stripe.Event,
+): Promise<boolean> {
+  const { error } = await service
+    .from("billing_events")
+    .insert({ id: event.id, type: event.type });
+  if (error) {
+    // 23505 = unique_violation → we've already handled this event.
+    if ((error as { code?: string }).code === "23505") return false;
+    console.warn("[billing webhook] idempotency insert failed:", error.message);
+  }
+  return true;
 }
 
 /**
  * POST /api/billing/webhook — Stripe subscription lifecycle. Verifies the
- * signature, then flips the user's tier via the service client (this is the
- * only place tier is changed server-side). Always returns 200 to acknowledge,
- * even when persistence is unavailable, so Stripe doesn't retry forever.
+ * signature, dedupes the event, then flips the user's tier via the service
+ * client (the only place tier changes server-side). Always returns 200 once the
+ * signature is valid so Stripe doesn't retry application-level issues.
  */
 export async function POST(req: Request) {
   const stripe = getStripe();
@@ -36,6 +58,10 @@ export async function POST(req: Request) {
 
   const service = getServiceSupabase();
   if (!service) return NextResponse.json({ received: true }); // can't persist; ack
+
+  // Idempotency: skip events we've already processed.
+  const fresh = await markEvent(service, event);
+  if (!fresh) return NextResponse.json({ received: true, duplicate: true });
 
   try {
     switch (event.type) {
@@ -69,11 +95,7 @@ export async function POST(req: Request) {
         const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
         await service
           .from("users")
-          .update({
-            tier: subscriptionStatusToTier(sub.status),
-            stripe_subscription_id: sub.id,
-            premium_until: isoFromUnix(sub.current_period_end),
-          })
+          .update(mapSubscriptionToUpdate(sub))
           .eq("stripe_customer_id", customerId);
         break;
       }

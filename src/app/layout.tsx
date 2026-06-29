@@ -6,6 +6,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  // Resolves relative OpenGraph/Twitter image URLs (e.g. on /w/<slug> share
+  // pages) to absolute URLs so link previews render correctly.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
   title: "WallpaperForge AI — Device-perfect AI wallpapers",
   description:
     "Generate AI phone wallpapers optimized for your exact device — focal subjects stay clear of clocks, widgets, notches, and app icons.",

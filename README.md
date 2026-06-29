@@ -16,6 +16,11 @@ AI · built-in mock).
   glassmorphism, ambient gradient backdrops, large tap-to-generate style cards,
   a swipeable result carousel, a magical generation overlay (AI particles +
   cycling status messages), page transitions, and a floating 5-tab bottom nav.
+- **Installable PWA** — add-to-home-screen install prompt, app icons, standalone
+  display, app shortcuts, and an offline fallback via a service worker.
+- **Public gallery & sharing** (Supabase) — publish a wallpaper to a shareable
+  public page (`/w/<slug>`) with link-preview metadata, and browse a community
+  gallery (`/gallery`). Public reads are anon-allowed via a dedicated RLS policy.
 - **2–3 tap generation** — tap a style card → result, or one-tap Surprise Me.
 - **In-app model selector** — switch between OpenAI, Gemini, Stability AI, and
   the mock provider from a pill dropdown; the choice is remembered locally.
@@ -29,9 +34,11 @@ AI · built-in mock).
 - **Variations** — generate 4 diverse alternates (color / angle / style /
   lighting) of any wallpaper.
 - **Favorites, collections & history** — re-download any previous generation.
-- **Premium architecture** — free vs. premium entitlements (daily limits, 4K,
-  exclusive styles, priority, no ads) are fully wired; payments are intentionally
-  left unimplemented behind a single tier switch.
+- **Premium architecture + Stripe billing** — free vs. premium entitlements
+  (daily limits, 4K, exclusive styles, priority, no ads) are fully wired, with
+  optional Stripe checkout, billing portal, and a signature-verified webhook
+  that flips a user's tier. Without keys, premium stays a simulated toggle and
+  no charges occur.
 - **Works with zero config** — the mock provider renders device-correct gradients
   so the whole app is usable before you add any API keys or a database.
 - **Mobile-first, premium aesthetic** — glassmorphism, gradients, smooth Framer
@@ -113,6 +120,25 @@ Everything is **additive and fully optional**: with no Supabase keys, auth,
 sync, and middleware are inert, and the Zustand store
 (`src/store/app-store.ts`) remains the source of truth, persisting to
 `localStorage`. The app is identical to its offline self until you sign in.
+
+### Premium billing (Stripe, optional)
+
+Wire real subscriptions to the existing entitlements:
+
+1. Create a recurring **Price** in Stripe for the Premium plan.
+2. Set env vars (see `.env.example`): `NEXT_PUBLIC_BILLING_ENABLED=true`,
+   `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`.
+3. Point a Stripe webhook at `/api/billing/webhook` for
+   `checkout.session.completed` and `customer.subscription.*` events.
+
+Flow: the Profile screen shows **Upgrade to Premium** → `POST /api/billing/checkout`
+opens Stripe Checkout → on success the **webhook** sets `users.tier = premium`
+(+ `premium_until`) via the service role → on next sign-in `useSync` loads the
+tier into the store, unlocking 4K and unlimited generations. Subscribers get a
+**Manage billing** button (`/api/billing/portal`). With billing disabled the
+Profile screen keeps the dev "simulate" toggle instead. Run the updated
+`supabase/schema.sql` for the `stripe_customer_id` / `stripe_subscription_id`
+columns.
 
 ---
 

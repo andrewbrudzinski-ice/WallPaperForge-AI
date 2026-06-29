@@ -9,6 +9,8 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
 import { AccountPanel } from "@/components/account/AccountPanel";
+import { UpgradeButton } from "@/components/billing/UpgradeButton";
+import { isBillingEnabledClient } from "@/lib/billing/config";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 
@@ -27,6 +29,7 @@ export default function DevicePage() {
   const tier = useAppStore((s) => s.tier);
   const setTier = useAppStore((s) => s.setTier);
   const ent = getEntitlements(tier);
+  const billingEnabled = isBillingEnabledClient();
 
   if (!device) {
     return (
@@ -120,7 +123,7 @@ export default function DevicePage() {
                   <Check className="h-4 w-4 text-emerald-400" /> Variations & favorites
                 </li>
               </ul>
-              {tier !== "free" && (
+              {!billingEnabled && tier !== "free" && (
                 <Button
                   variant="secondary"
                   className="mt-4 w-full"
@@ -148,19 +151,23 @@ export default function DevicePage() {
                   <Check className="h-4 w-4 text-amber-300" /> Exclusive styles · no ads
                 </li>
               </ul>
-              <Button
-                className="mt-4 w-full"
-                onClick={() => setTier(tier === "premium" ? "free" : "premium")}
-              >
-                {tier === "premium" ? "Active — tap to simulate Free" : "Simulate Premium"}
-              </Button>
+              {billingEnabled ? (
+                <UpgradeButton />
+              ) : (
+                <Button
+                  className="mt-4 w-full"
+                  onClick={() => setTier(tier === "premium" ? "free" : "premium")}
+                >
+                  {tier === "premium" ? "Active — tap to simulate Free" : "Simulate Premium"}
+                </Button>
+              )}
             </GlassCard>
           </div>
           <p className="mt-3 flex items-center gap-2 text-xs text-white/40">
             <Shield className="h-3.5 w-3.5" />
-            Payments aren&apos;t wired up yet — the toggle simulates entitlements so
-            premium gating ({ent.maxResolution === "4k" ? "4K enabled" : "1× output"})
-            can be tested end-to-end.
+            {billingEnabled
+              ? `Secure checkout via Stripe. Premium gating is ${ent.maxResolution === "4k" ? "active (4K)" : "1× output"}.`
+              : `Payments run through Stripe when configured — without keys this toggle simulates entitlements so premium gating (${ent.maxResolution === "4k" ? "4K enabled" : "1× output"}) can be tested end-to-end.`}
           </p>
         </section>
       </main>

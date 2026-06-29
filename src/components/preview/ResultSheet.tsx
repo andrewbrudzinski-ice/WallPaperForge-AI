@@ -17,6 +17,7 @@ import { DevicePreview, type PreviewMode } from "./DevicePreview";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAppStore } from "@/store/app-store";
+import { PublishButton } from "@/components/gallery/PublishButton";
 import { downloadImage, slugify, cn } from "@/lib/utils";
 
 interface ResultSheetProps {
@@ -80,7 +81,7 @@ export function ResultSheet({
     if (!activeSlide) return;
     await downloadImage(
       activeSlide.imageUrl,
-      `wallpaperforge-${slugify(activeSlide.description)}-${device.id}.png`,
+      `wallpaperforge-${slugify(activeSlide.description)}-${device.id}`,
     );
   }
 
@@ -119,6 +120,9 @@ export function ResultSheet({
 
           {/* Sheet */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Wallpaper result"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -156,6 +160,8 @@ export function ResultSheet({
                     showZones ? "bg-accent/20 text-white" : "text-white/50 hover:bg-white/10",
                   )}
                   title="Toggle safe zones"
+                  aria-label="Toggle safe-zone overlay"
+                  aria-pressed={showZones}
                 >
                   <Eye className="h-4 w-4" />
                 </button>
@@ -163,11 +169,13 @@ export function ResultSheet({
                   onClick={() => setFullscreen(true)}
                   className="grid h-9 w-9 place-items-center rounded-xl text-white/50 hover:bg-white/10"
                   title="Fullscreen"
+                  aria-label="View fullscreen"
                 >
                   <Maximize2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={onClose}
+                  aria-label="Close"
                   className="grid h-9 w-9 place-items-center rounded-xl text-white/50 hover:bg-white/10"
                 >
                   <X className="h-4 w-4" />
@@ -255,6 +263,8 @@ export function ResultSheet({
                 Generate 4 Variations
               </Button>
             </div>
+
+            {activeSlide && <PublishButton wallpaper={activeSlide} />}
           </motion.div>
 
           {/* Fullscreen preview */}

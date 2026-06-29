@@ -6,10 +6,24 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
+  // Resolves relative OpenGraph/Twitter image URLs (e.g. on /w/<slug> share
+  // pages) to absolute URLs so link previews render correctly.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
   title: "WallpaperForge AI — Device-perfect AI wallpapers",
   description:
     "Generate AI phone wallpapers optimized for your exact device — focal subjects stay clear of clocks, widgets, notches, and app icons.",
   manifest: "/manifest.webmanifest",
+  applicationName: "WallpaperForge AI",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

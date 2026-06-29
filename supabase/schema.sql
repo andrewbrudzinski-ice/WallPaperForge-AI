@@ -34,6 +34,20 @@ create table if not exists public.users (
   updated_at    timestamptz not null default now()
 );
 
+-- Stripe billing identifiers (added idempotently). Populated by the billing
+-- webhook; never written from the client.
+alter table public.users add column if not exists stripe_customer_id text unique;
+alter table public.users add column if not exists stripe_subscription_id text;
+
+-- Processed Stripe webhook events, for idempotency (Stripe may deliver an event
+-- more than once). Written only by the service role; RLS denies client access.
+create table if not exists public.billing_events (
+  id           text primary key,        -- Stripe event id (evt_...)
+  type         text not null,
+  processed_at timestamptz not null default now()
+);
+alter table public.billing_events enable row level security;
+
 -- ─────────────────────────────────────────────────────────────
 -- DEVICES
 -- A user's saved phone profile(s). One is marked active.
@@ -84,6 +98,61 @@ create table if not exists public.generated_wallpapers (
 
 create index if not exists wallpapers_user_idx
   on public.generated_wallpapers (user_id, created_at desc);
+
+-- ── Public gallery / sharing ─────────────────────────────────
+-- A wallpaper can be published to a public, shareable gallery. `share_slug`
+-- backs the public URL (/w/<slug>). These columns are added idempotently so
+-- the migration is safe to re-run on an existing database.
+alter table public.generated_wallpapers
+  add column if not exists is_public boolean not null default false;
+alter table public.generated_wallpapers
+  add column if not exists share_slug text unique;
+alter table public.generated_wallpapers
+  add column if not exists published_at timestamptz;
+
+create index if not exists wallpapers_public_idx
+  on public.generated_wallpapers (published_at desc) where (is_public);
+
+-- Cached like total for cheap public reads (maintained by trigger below).
+alter table public.generated_wallpapers
+  add column if not exists like_count integer not null default 0;
+
+-- Per-user likes on public wallpapers.
+create table if not exists public.gallery_likes (
+  user_id      uuid not null references public.users (id) on delete cascade,
+  wallpaper_id uuid not null references public.generated_wallpapers (id) on delete cascade,
+  created_at   timestamptz not null default now(),
+  primary key (user_id, wallpaper_id)
+);
+
+create index if not exists gallery_likes_wallpaper_idx
+  on public.gallery_likes (wallpaper_id);
+
+-- Keep generated_wallpapers.like_count in sync. SECURITY DEFINER so it can
+-- update a wallpaper owned by a different user than the liker.
+create or replace function public.bump_like_count()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if (tg_op = 'INSERT') then
+    update public.generated_wallpapers
+      set like_count = like_count + 1 where id = new.wallpaper_id;
+    return new;
+  elsif (tg_op = 'DELETE') then
+    update public.generated_wallpapers
+      set like_count = greatest(0, like_count - 1) where id = old.wallpaper_id;
+    return old;
+  end if;
+  return null;
+end;
+$$;
+
+drop trigger if exists gallery_like_count on public.gallery_likes;
+create trigger gallery_like_count
+  after insert or delete on public.gallery_likes
+  for each row execute function public.bump_like_count();
 
 -- ─────────────────────────────────────────────────────────────
 -- FAVORITES
@@ -183,6 +252,7 @@ alter table public.favorites            enable row level security;
 alter table public.collections          enable row level security;
 alter table public.collection_items     enable row level security;
 alter table public.generation_history   enable row level security;
+alter table public.gallery_likes        enable row level security;
 
 -- users
 drop policy if exists "users self" on public.users;
@@ -198,6 +268,11 @@ create policy "devices owner" on public.devices
 drop policy if exists "wallpapers owner" on public.generated_wallpapers;
 create policy "wallpapers owner" on public.generated_wallpapers
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Anyone (including anon) may read wallpapers published to the public gallery.
+drop policy if exists "wallpapers public read" on public.generated_wallpapers;
+create policy "wallpapers public read" on public.generated_wallpapers
+  for select using (is_public = true);
 
 -- favorites
 drop policy if exists "favorites owner" on public.favorites;
@@ -227,4 +302,9 @@ create policy "collection items owner" on public.collection_items
 -- generation_history
 drop policy if exists "history owner" on public.generation_history;
 create policy "history owner" on public.generation_history
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- gallery_likes — a user manages their own likes.
+drop policy if exists "likes owner" on public.gallery_likes;
+create policy "likes owner" on public.gallery_likes
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

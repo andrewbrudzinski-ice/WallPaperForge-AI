@@ -6,6 +6,7 @@ import { getServerSupabase } from "@/lib/supabase/server";
 import { getPublicWallpaper } from "@/lib/gallery/gallery-service";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { ShareActions } from "@/components/gallery/ShareActions";
+import { LikeButton } from "@/components/gallery/LikeButton";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +18,8 @@ interface Params {
 async function load(slug: string) {
   const sb = getServerSupabase();
   if (!sb) return null;
-  return getPublicWallpaper(sb, slug);
+  const { data: auth } = await sb.auth.getUser();
+  return getPublicWallpaper(sb, slug, auth?.user?.id);
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -69,6 +71,14 @@ export default async function PublicWallpaperPage({ params }: Params) {
           <p className="mt-1 text-sm text-white/50">
             Made with WallpaperForge AI — wallpapers composed for your exact phone.
           </p>
+
+          <div className="mt-3 flex justify-center">
+            <LikeButton
+              wallpaperId={w.id}
+              initialCount={w.likeCount}
+              initialLiked={w.likedByMe}
+            />
+          </div>
 
           <ShareActions imageUrl={w.imageUrl} description={w.description} />
 

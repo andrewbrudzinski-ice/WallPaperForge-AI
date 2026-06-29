@@ -171,6 +171,17 @@ export interface PublicWallpaper {
   width: number;
   height: number;
   createdAt: string;
+  likeCount: number;
+  /** Whether the requesting (signed-in) user has liked this wallpaper. */
+  likedByMe?: boolean;
+}
+
+export type GallerySort = "recent" | "popular";
+
+export interface GalleryQuery {
+  category: WallpaperCategory | null;
+  sort: GallerySort;
+  offset: number;
 }
 
 export interface GenerateResponse {

@@ -34,6 +34,11 @@ create table if not exists public.users (
   updated_at    timestamptz not null default now()
 );
 
+-- Stripe billing identifiers (added idempotently). Populated by the billing
+-- webhook; never written from the client.
+alter table public.users add column if not exists stripe_customer_id text unique;
+alter table public.users add column if not exists stripe_subscription_id text;
+
 -- ─────────────────────────────────────────────────────────────
 -- DEVICES
 -- A user's saved phone profile(s). One is marked active.

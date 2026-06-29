@@ -51,6 +51,19 @@ export default function HomePage() {
     return () => clearTimeout(id);
   }, [onboarded, device, router]);
 
+  // Handle PWA app-shortcut deep links (e.g. ?action=surprise). Reading
+  // location directly avoids a useSearchParams Suspense boundary.
+  useEffect(() => {
+    if (!device) return;
+    const action = new URLSearchParams(window.location.search).get("action");
+    if (action === "surprise") {
+      window.history.replaceState({}, "", "/home");
+      void flow.run({ mode: "surprise", surprise: randomSurprise() });
+    }
+    // Run once when the device becomes available.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [device]);
+
   if (!device) return null;
 
   const recent: GeneratedWallpaper[] = history.map((h) => h.wallpaper);

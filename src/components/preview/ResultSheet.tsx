@@ -81,7 +81,7 @@ export function ResultSheet({
     if (!activeSlide) return;
     await downloadImage(
       activeSlide.imageUrl,
-      `wallpaperforge-${slugify(activeSlide.description)}-${device.id}.png`,
+      `wallpaperforge-${slugify(activeSlide.description)}-${device.id}`,
     );
   }
 

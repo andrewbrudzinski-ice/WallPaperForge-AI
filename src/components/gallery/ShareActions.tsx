@@ -12,7 +12,7 @@ export function ShareActions({
   description: string;
 }) {
   async function download() {
-    await downloadImage(imageUrl, `wallpaperforge-${slugify(description)}.png`);
+    await downloadImage(imageUrl, `wallpaperforge-${slugify(description)}`);
   }
 
   async function share() {

@@ -125,7 +125,7 @@ export default function FavoritesPage() {
                       onClick={() =>
                         downloadImage(
                           w.imageUrl,
-                          `wallpaperforge-${slugify(w.description)}.png`,
+                          `wallpaperforge-${slugify(w.description)}`,
                         )
                       }
                       className="rounded-lg p-1.5 text-white/60 hover:bg-white/10 hover:text-white"

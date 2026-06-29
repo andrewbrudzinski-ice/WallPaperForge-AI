@@ -66,6 +66,9 @@ interface AppState {
     favoriteIds: string[];
     collections: Collection[];
   }) => void;
+
+  /** Wipe all local data (Settings → clear data). */
+  resetAll: () => void;
 }
 
 function utcDayKey(): string {
@@ -200,6 +203,20 @@ export const useAppStore = create<AppState>()(
           }
 
           return { history, favorites, collections: Array.from(colById.values()) };
+        }),
+
+      resetAll: () =>
+        set({
+          device: null,
+          onboarded: false,
+          tier: "free",
+          provider: "openai",
+          usage: { dayKey: utcDayKey(), count: 0 },
+          current: null,
+          variations: [],
+          history: [],
+          favorites: [],
+          collections: [],
         }),
     }),
     {

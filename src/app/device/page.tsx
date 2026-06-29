@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { AmbientBackground } from "@/components/ui/AmbientBackground";
 import { DevicePreview } from "@/components/preview/DevicePreview";
 import { AccountPanel } from "@/components/account/AccountPanel";
+import { SettingsPanel } from "@/components/settings/SettingsPanel";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import { isBillingEnabledClient } from "@/lib/billing/config";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -170,6 +171,8 @@ export default function DevicePage() {
               : `Payments run through Stripe when configured — without keys this toggle simulates entitlements so premium gating (${ent.maxResolution === "4k" ? "4K enabled" : "1× output"}) can be tested end-to-end.`}
           </p>
         </section>
+
+        <SettingsPanel />
       </main>
       <BottomNav />
     </>

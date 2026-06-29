@@ -120,6 +120,9 @@ export function ResultSheet({
 
           {/* Sheet */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Wallpaper result"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -157,6 +160,8 @@ export function ResultSheet({
                     showZones ? "bg-accent/20 text-white" : "text-white/50 hover:bg-white/10",
                   )}
                   title="Toggle safe zones"
+                  aria-label="Toggle safe-zone overlay"
+                  aria-pressed={showZones}
                 >
                   <Eye className="h-4 w-4" />
                 </button>
@@ -164,11 +169,13 @@ export function ResultSheet({
                   onClick={() => setFullscreen(true)}
                   className="grid h-9 w-9 place-items-center rounded-xl text-white/50 hover:bg-white/10"
                   title="Fullscreen"
+                  aria-label="View fullscreen"
                 >
                   <Maximize2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={onClose}
+                  aria-label="Close"
                   className="grid h-9 w-9 place-items-center rounded-xl text-white/50 hover:bg-white/10"
                 >
                   <X className="h-4 w-4" />

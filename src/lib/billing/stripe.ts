@@ -33,3 +33,34 @@ export function getStripe(): Stripe | null {
 export function subscriptionStatusToTier(status: string): Tier {
   return status === "active" || status === "trialing" ? "premium" : "free";
 }
+
+/** Convert a Stripe unix timestamp (seconds) to an ISO string, or null. */
+export function isoFromUnix(seconds?: number | null): string | null {
+  return seconds ? new Date(seconds * 1000).toISOString() : null;
+}
+
+/** The minimal shape we read off a Stripe subscription. */
+export interface SubscriptionLike {
+  id: string;
+  status: string;
+  current_period_end?: number | null;
+}
+
+export interface UserTierUpdate {
+  tier: Tier;
+  stripe_subscription_id: string;
+  premium_until: string | null;
+}
+
+/**
+ * Pure mapping from a Stripe subscription to the user-row fields the webhook
+ * writes. Centralised + unit-tested so the (money-handling) webhook stays a
+ * thin, predictable adapter.
+ */
+export function mapSubscriptionToUpdate(sub: SubscriptionLike): UserTierUpdate {
+  return {
+    tier: subscriptionStatusToTier(sub.status),
+    stripe_subscription_id: sub.id,
+    premium_until: isoFromUnix(sub.current_period_end),
+  };
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
@@ -19,6 +19,16 @@ export default function CreatePage() {
   const device = useAppStore((s) => s.device);
   const onboarded = useAppStore((s) => s.onboarded);
   const flow = useGenerationFlow();
+
+  // Gallery remix: seed the prompt from ?remix=... (read once, then clean URL).
+  const [remixPrompt] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("remix") ?? "";
+  });
+
+  useEffect(() => {
+    if (remixPrompt) window.history.replaceState({}, "", "/generate");
+  }, [remixPrompt]);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -71,6 +81,7 @@ export default function CreatePage() {
 
         <GeneratorPanel
           loading={flow.loading}
+          initialPrompt={remixPrompt}
           onRandom={(category) => flow.run({ mode: "random", category })}
           onPrompt={(prompt) => flow.run({ mode: "prompt", prompt })}
           onSurprise={(surprise) => flow.run({ mode: "surprise", surprise })}

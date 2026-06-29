@@ -45,6 +45,16 @@ export function useSync() {
         const server = await pullAll(sb, user.id);
         if (cancelled) return;
 
+        // Sync the entitlement tier from the server (set by the billing webhook).
+        const { data: profile } = await sb
+          .from("users")
+          .select("tier")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (profile?.tier === "premium" || profile?.tier === "free") {
+          useAppStore.getState().setTier(profile.tier);
+        }
+
         const before = useAppStore.getState();
         const localWallpapers = new Map<string, GeneratedWallpaper>();
         before.history.forEach((h) => localWallpapers.set(h.wallpaper.id, h.wallpaper));

@@ -99,6 +99,47 @@ alter table public.generated_wallpapers
 create index if not exists wallpapers_public_idx
   on public.generated_wallpapers (published_at desc) where (is_public);
 
+-- Cached like total for cheap public reads (maintained by trigger below).
+alter table public.generated_wallpapers
+  add column if not exists like_count integer not null default 0;
+
+-- Per-user likes on public wallpapers.
+create table if not exists public.gallery_likes (
+  user_id      uuid not null references public.users (id) on delete cascade,
+  wallpaper_id uuid not null references public.generated_wallpapers (id) on delete cascade,
+  created_at   timestamptz not null default now(),
+  primary key (user_id, wallpaper_id)
+);
+
+create index if not exists gallery_likes_wallpaper_idx
+  on public.gallery_likes (wallpaper_id);
+
+-- Keep generated_wallpapers.like_count in sync. SECURITY DEFINER so it can
+-- update a wallpaper owned by a different user than the liker.
+create or replace function public.bump_like_count()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if (tg_op = 'INSERT') then
+    update public.generated_wallpapers
+      set like_count = like_count + 1 where id = new.wallpaper_id;
+    return new;
+  elsif (tg_op = 'DELETE') then
+    update public.generated_wallpapers
+      set like_count = greatest(0, like_count - 1) where id = old.wallpaper_id;
+    return old;
+  end if;
+  return null;
+end;
+$$;
+
+drop trigger if exists gallery_like_count on public.gallery_likes;
+create trigger gallery_like_count
+  after insert or delete on public.gallery_likes
+  for each row execute function public.bump_like_count();
+
 -- ─────────────────────────────────────────────────────────────
 -- FAVORITES
 -- A user's favorited wallpapers (join table; unique per pair).
@@ -197,6 +238,7 @@ alter table public.favorites            enable row level security;
 alter table public.collections          enable row level security;
 alter table public.collection_items     enable row level security;
 alter table public.generation_history   enable row level security;
+alter table public.gallery_likes        enable row level security;
 
 -- users
 drop policy if exists "users self" on public.users;
@@ -246,4 +288,9 @@ create policy "collection items owner" on public.collection_items
 -- generation_history
 drop policy if exists "history owner" on public.generation_history;
 create policy "history owner" on public.generation_history
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- gallery_likes — a user manages their own likes.
+drop policy if exists "likes owner" on public.gallery_likes;
+create policy "likes owner" on public.gallery_likes
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Download,
@@ -60,6 +60,12 @@ export function ResultSheet({
   const [showZones, setShowZones] = useState(false);
   const [index, setIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  function scrollToIndex(i: number) {
+    const el = carouselRef.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  }
 
   const toggleFavorite = useAppStore((s) => s.toggleFavorite);
   const isFavoriteFn = useAppStore((s) => s.isFavorite);
@@ -74,6 +80,23 @@ export function ResultSheet({
   useEffect(() => {
     if (open) setIndex(0);
   }, [open, wallpaper?.id]);
+
+  // Keyboard: Escape closes, arrows move through the carousel.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (fullscreen) setFullscreen(false);
+        else onClose();
+      } else if (e.key === "ArrowRight") {
+        scrollToIndex(Math.min(slides.length - 1, index + 1));
+      } else if (e.key === "ArrowLeft") {
+        scrollToIndex(Math.max(0, index - 1));
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, fullscreen, index, slides.length, onClose]);
 
   const activeSlide = slides[Math.min(index, slides.length - 1)] ?? wallpaper;
   const isFavorite = activeSlide ? isFavoriteFn(activeSlide.id) : false;
@@ -186,6 +209,7 @@ export function ResultSheet({
 
             {/* Swipeable carousel */}
             <div
+              ref={carouselRef}
               className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto"
               onScroll={(e) => {
                 const el = e.currentTarget;
@@ -214,8 +238,10 @@ export function ResultSheet({
             {slides.length > 1 && (
               <div className="mt-3 flex items-center justify-center gap-1.5">
                 {slides.map((_, i) => (
-                  <span
+                  <button
                     key={i}
+                    onClick={() => scrollToIndex(i)}
+                    aria-label={`Go to wallpaper ${i + 1}`}
                     className={cn(
                       "h-1.5 rounded-full transition-all",
                       i === index ? "w-5 bg-accent" : "w-1.5 bg-white/25",

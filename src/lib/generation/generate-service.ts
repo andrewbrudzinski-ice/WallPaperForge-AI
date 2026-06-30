@@ -5,6 +5,7 @@ import type {
 } from "@/types";
 import { getProvider } from "@/lib/providers";
 import { enhancePrompt } from "./optimization-engine";
+import { targetDimensions } from "./dimensions";
 
 /**
  * Server-side generation service.
@@ -15,27 +16,17 @@ import { enhancePrompt } from "./optimization-engine";
  * wrappers around it.
  */
 
-/** Target output dimensions, capped for non-4K to keep payloads reasonable. */
-function targetDimensions(req: GenerateRequest): { width: number; height: number } {
-  const { width, height } = req.device;
-  if (req.highRes) return { width, height };
-
-  // Scale the longest side down to ~1536px while preserving aspect ratio.
-  const maxSide = 1536;
-  const scale = Math.min(1, maxSide / Math.max(width, height));
-  return {
-    width: Math.round(width * scale),
-    height: Math.round(height * scale),
-  };
-}
-
 async function renderOne(
   req: GenerateRequest,
   variationIndex?: number,
 ): Promise<GeneratedWallpaper> {
   const enhanced = enhancePrompt(req, variationIndex);
   const provider = getProvider(req.provider);
-  const { width, height } = targetDimensions(req);
+  const { width, height } = targetDimensions(
+    req.device.width,
+    req.device.height,
+    req.highRes,
+  );
 
   const result = await provider.generate({
     prompt: enhanced.prompt,
